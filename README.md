@@ -1,3 +1,9 @@
+# change
+- adapt MID360;
+  ```
+  add_compile_definitions(USE_MY_CLOUD)
+  ```
+
 # Quick Start within 3 Minutes 
 Compiling tests passed on ubuntu **16.04, 18.04, and 20.04** with ros installed.
 You can just execute the following commands one by one.

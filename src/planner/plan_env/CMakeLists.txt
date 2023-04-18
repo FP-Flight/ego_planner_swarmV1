@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(plan_env)
+add_compile_definitions(USE_MY_CLOUD)
 
 set(CMAKE_BUILD_TYPE "Release")
 ADD_COMPILE_OPTIONS(-std=c++11 )
