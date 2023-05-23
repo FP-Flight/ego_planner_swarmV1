@@ -105,7 +105,7 @@ void GridMap::initMap(ros::NodeHandle &nh)
 
   /* init callback */
   extrinsic_sub_ = node_.subscribe<nav_msgs::Odometry>(
-      "/vins_estimator/extrinsic", 10, &GridMap::extrinsicCallback, this); //sub
+      "/vins_fusion/extrinsic", 10, &GridMap::extrinsicCallback, this); //sub
 // TODO:hyaline  
 #ifndef USE_MY_CLOUD
   depth_sub_.reset(new message_filters::Subscriber<sensor_msgs::Image>(node_, "grid_map/depth", 50));
@@ -114,6 +114,8 @@ void GridMap::initMap(ros::NodeHandle &nh)
 
   if (mp_.pose_type_ == POSE_STAMPED)
   {
+    ROS_INFO("register POSE_STAMPED");
+
     pose_sub_.reset(
         new message_filters::Subscriber<geometry_msgs::PoseStamped>(node_, "grid_map/pose", 25));
 
@@ -123,6 +125,7 @@ void GridMap::initMap(ros::NodeHandle &nh)
   }
   else if (mp_.pose_type_ == ODOMETRY)
   {
+    ROS_INFO("register ODOMETRY");
     odom_sub_.reset(new message_filters::Subscriber<nav_msgs::Odometry>(node_, "grid_map/odom", 100, ros::TransportHints().tcpNoDelay()));
 
     sync_image_odom_.reset(new message_filters::Synchronizer<SyncPolicyImageOdom>(
@@ -1006,6 +1009,7 @@ void GridMap::getRegion(Eigen::Vector3d &ori, Eigen::Vector3d &size)
 
 void GridMap::extrinsicCallback(const nav_msgs::OdometryConstPtr &odom)
 {
+  // ROS_INFO("recv new extrinsic");
   Eigen::Quaterniond cam2body_q = Eigen::Quaterniond(odom->pose.pose.orientation.w,
                                                      odom->pose.pose.orientation.x,
                                                      odom->pose.pose.orientation.y,
@@ -1021,6 +1025,7 @@ void GridMap::extrinsicCallback(const nav_msgs::OdometryConstPtr &odom)
 void GridMap::depthOdomCallback(const sensor_msgs::ImageConstPtr &img,
                                 const nav_msgs::OdometryConstPtr &odom)
 {
+  // ROS_INFO("recv depth and odom");
   /* get pose */
   Eigen::Quaterniond body_q = Eigen::Quaterniond(odom->pose.pose.orientation.w,
                                                  odom->pose.pose.orientation.x,

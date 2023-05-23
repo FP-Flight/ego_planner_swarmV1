@@ -244,6 +244,8 @@ namespace ego_planner
 
   void EGOReplanFSM::BroadcastBsplineCallback(const traj_utils::BsplinePtr &msg)
   {
+    // ROS_ERROR("wanghao:Recv Broadcast! Local - Remote Agent %d = %fs",
+    //             msg->drone_id, (ros::Time::now() - msg->start_time).toSec());
     size_t id = msg->drone_id;
     if ((int)id == planner_manager_->pp_.drone_id)
       return;
@@ -316,6 +318,7 @@ namespace ego_planner
     /* Check Collision */
     if (planner_manager_->checkCollision(id))
     {
+      // ROS_ERROR("traj Collision");
       changeFSMExecState(REPLAN_TRAJ, "TRAJ_CHECK");
     }
   }
@@ -719,6 +722,8 @@ namespace ego_planner
 
         if (dist < CLEARANCE)
         {
+          // ROS_WARN("wanghao: swarm too close");
+
           occ = true;
           break;
         }
