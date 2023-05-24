@@ -1,0 +1,13 @@
+  <launch>
+    <!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(find ego_planner)/launch/swarm_viewer.rviz" required="true" /> -->
+    <node pkg="swarm_terminal" name="swarm_terminal_0" type="swarm_terminal_node" output="screen" >
+        <param name="drone_id" value="0"/>
+        <!-- <remap from="~drone0_odom_topic" to=""/> -->
+        <remap from="~optimal_list" to="/drone_0_ego_planner_node/optimal_list"/>
+    </node>
+    <node pkg="swarm_terminal" name="swarm_terminal_1" type="swarm_terminal_node" output="screen" >
+        <param name="drone_id" value="1"/>
+        <!-- <remap from="~drone0_odom_topic" to=""/> -->
+        <remap from="~optimal_list" to="/drone_1_ego_planner_node/optimal_list"/>
+    </node> 
+  </launch>
