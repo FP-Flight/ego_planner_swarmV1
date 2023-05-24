@@ -37,15 +37,20 @@ void odom_sub_cb(const nav_msgs::OdometryPtr &msg)
 
 void one_traj_sub_cb(const traj_utils::BsplinePtr &msg)
 {
-  ROS_INFO("recv traj");
-  Eigen::MatrixXd ctrl_pts = Eigen::MatrixXd::Zero(3, msg->pos_pts.size());
-  for (int i = 0; i < msg->pos_pts.size(); ++i)
-  {   
-      ctrl_pts(0,i) = msg->pos_pts.at(i).x;
-      ctrl_pts(1,i) = msg->pos_pts.at(i).y;
-      ctrl_pts(2,i) = msg->pos_pts.at(i).z;
-      }
+  if(msg->drone_id == drone_id_){
+    ROS_INFO("recv traj %d",drone_id_);
+    Eigen::MatrixXd ctrl_pts = Eigen::MatrixXd::Zero(3, msg->pos_pts.size());
+    for (int i = 0; i < msg->pos_pts.size(); ++i)
+    {   
+        ctrl_pts(0,i) = msg->pos_pts.at(i).x;
+        ctrl_pts(1,i) = msg->pos_pts.at(i).y;
+        ctrl_pts(2,i) = msg->pos_pts.at(i).z;
+        }
   visualization_->displayOptimalList(ctrl_pts, 0);
+  }
+
+  
+
 
 }
 int main(int argc, char **argv)
