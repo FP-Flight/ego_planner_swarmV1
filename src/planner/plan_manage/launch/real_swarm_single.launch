@@ -7,7 +7,7 @@
     <arg name="odom_topic" value="/quadrotor_control/odom"/>
     <arg name="depth_camera_topic" value="/camera/depth/image_rect_raw"/>
 
-    <arg name="drone_id" value="0" />
+    <arg name="drone_id" value="1" />
     <!-- number of moving objects -->
     <arg name="obj_num" value="10" />
     <node pkg="rosmsg_tcp_bridge" name="drone_bridge_node" type="bridge_node" output="screen" >
@@ -48,8 +48,8 @@
     <arg name="fy" value="387.229248046875"/>
 
     <!-- maximum velocity and acceleration the drone will reach -->
-    <arg name="max_vel" value="0.6" />
-    <arg name="max_acc" value="3" />
+    <arg name="max_vel" value="1.0" />
+    <arg name="max_acc" value="2" />
 
     <!--always set to 1.5 times grater than sensing horizen-->
     <arg name="planning_horizon" value="7.5" /> 
@@ -62,18 +62,18 @@
     
     <!-- global waypoints -->
     <!-- It generates a piecewise min-snap traj passing all waypoints -->
-    <arg name="point_num" value="3" />
+    <arg name="point_num" value="2" />
 
     <arg name="point0_x" value="9.0" />
-    <arg name="point0_y" value="2.0" />
+    <arg name="point0_y" value="-2.0" />
     <arg name="point0_z" value="1.0" />
 
-    <arg name="point1_x" value="9.0" />
-    <arg name="point1_y" value="-1.0" />
+    <arg name="point1_x" value="2.0" />
+    <arg name="point1_y" value="2.0" />
     <arg name="point1_z" value="1.0" />
 
-    <arg name="point2_x" value="2.0" />
-    <arg name="point2_y" value="1.0" />
+    <arg name="point2_x" value="0.0" />
+    <arg name="point2_y" value="0.0" />
     <arg name="point2_z" value="1.0" />
 
     <arg name="point3_x" value="0.0" />
