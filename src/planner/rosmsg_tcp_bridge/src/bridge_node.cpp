@@ -487,7 +487,7 @@ int deserializeTakeoff(std_msgs::Float32MultiArrayPtr &msg)
   ptr += sizeof(MESSAGE_TYPE);
   float len = *((float *)ptr);
   ROS_INFO_STREAM(len);
-  msg->data.resize(len);
+  msg->data.resize(len+1);
   msg->data[0] = len;
   ptr += sizeof(float);
 
@@ -506,7 +506,7 @@ int deserializeLand(std_msgs::Float32MultiArrayPtr &msg)
   char *ptr = udp_recv_buf_;
   ptr += sizeof(MESSAGE_TYPE);
   float len = *((float *)ptr);
-  msg->data.resize(len);
+  msg->data.resize(len+1);
   msg->data[0] = len;
   ptr += sizeof(float);
 
