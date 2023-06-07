@@ -8,6 +8,7 @@
 #include <traj_utils/Bspline.h>
 #include <nav_msgs/Odometry.h>
 #include <std_msgs/Empty.h>
+#include <std_msgs/Float32MultiArray.h>
 
 #include <unistd.h>
 #include <arpa/inet.h>
@@ -21,11 +22,12 @@
 using namespace std;
 
 int send_sock_, server_fd_, recv_sock_, udp_server_fd_, udp_send_fd_;
-ros::Subscriber swarm_trajs_sub_, other_odoms_sub_, emergency_stop_sub_, one_traj_sub_;
-ros::Publisher swarm_trajs_pub_, other_odoms_pub_, emergency_stop_pub_, one_traj_pub_;
+ros::Subscriber swarm_trajs_sub_, other_odoms_sub_, emergency_stop_sub_, one_traj_sub_ ,swarm_takeoff_sub_,swarm_land_sub_;
+ros::Publisher swarm_trajs_pub_, other_odoms_pub_, emergency_stop_pub_, one_traj_pub_,swarm_takeoff_pub_,swarm_land_pub_;
 string tcp_ip_, udp_ip_;
 int drone_id_;
 double odom_broadcast_freq_;
+bool is_master;
 char send_buf_[BUF_LEN], recv_buf_[BUF_LEN], udp_recv_buf_[BUF_LEN], udp_send_buf_[BUF_LEN];
 struct sockaddr_in addr_udp_send_;
 traj_utils::MultiBsplinesPtr bsplines_msg_;
@@ -33,12 +35,20 @@ nav_msgs::OdometryPtr odom_msg_;
 std_msgs::EmptyPtr stop_msg_;
 traj_utils::BsplinePtr bspline_msg_;
 
+std_msgs::Float32MultiArrayPtr takeoff_msg_;
+std_msgs::Float32MultiArrayPtr land_msg_;
+std_msgs::Float32MultiArrayPtr command_point_msg;
+
 enum MESSAGE_TYPE
 {
   ODOM = 888,
   MULTI_TRAJ,
   ONE_TRAJ,
-  STOP
+  STOP,
+  TAKEOFF,
+  LAND,
+  ONE_POINT
+
 } massage_type_;
 
 int connect_to_next_drone(const char *ip, const int port)
@@ -470,7 +480,45 @@ int deserializeStop(std_msgs::EmptyPtr &msg)
 
   return ptr - udp_recv_buf_;
 }
+int deserializeTakeoff(std_msgs::Float32MultiArrayPtr &msg)
+{
+  char *ptr = udp_recv_buf_;
+  ptr += sizeof(MESSAGE_TYPE);
+  float len = *((float *)ptr);
+  ROS_INFO_STREAM(len);
+  msg->data.resize(len);
+  msg->data[0] = len;
+  ptr += sizeof(float);
 
+  for(int i=0;i<len;i++)
+  {
+    ROS_INFO_STREAM(i);
+    msg->data[i+1] = *((double *)ptr);
+    ptr += sizeof(float);
+  }
+
+
+  return ptr - udp_recv_buf_;
+}
+int deserializeLand(std_msgs::Float32MultiArrayPtr &msg)
+{
+  char *ptr = udp_recv_buf_;
+  ptr += sizeof(MESSAGE_TYPE);
+  float len = *((float *)ptr);
+  msg->data.resize(len);
+  msg->data[0] = len;
+  ptr += sizeof(float);
+
+  for(int i=0;i<len;i++)
+  {
+    ROS_INFO_STREAM(i);
+    msg->data[i+1] = *((double *)ptr);
+    ptr += sizeof(float);
+  }
+
+
+  return ptr - udp_recv_buf_;
+}
 int deserializeOdom(nav_msgs::OdometryPtr &msg)
 {
   char *ptr = udp_recv_buf_;
@@ -622,6 +670,67 @@ void odom_sub_udp_cb(const nav_msgs::OdometryPtr &msg)
   }
 }
 
+
+int serializeTakeoff(const std_msgs::Float32MultiArray &msg)
+{
+  char *ptr = udp_send_buf_;
+
+  *((MESSAGE_TYPE *)ptr) = MESSAGE_TYPE::TAKEOFF;
+  ptr += sizeof(MESSAGE_TYPE);
+
+  float len = msg.data[0];
+  *((float *)ptr) = len;
+  ptr += sizeof(float);
+  for(int i=0;i<len;i++)
+  {
+    *((float *)ptr) = msg.data[i + 1];
+    ptr += sizeof(float);
+  }
+
+  return ptr - udp_send_buf_;
+}
+void takeoff_command_cb(const std_msgs::Float32MultiArray &msg)
+{
+  int len = serializeTakeoff(msg);
+
+  if (sendto(udp_send_fd_, udp_send_buf_, len, 0, (struct sockaddr *)&addr_udp_send_, sizeof(addr_udp_send_)) <= 0)
+  {
+    ROS_ERROR("UDP SEND ERROR (2)!!!");
+  }
+}
+
+int serializeLand(const std_msgs::Float32MultiArray &msg)
+{
+  char *ptr = udp_send_buf_;
+
+  *((MESSAGE_TYPE *)ptr) = MESSAGE_TYPE::LAND;
+  ptr += sizeof(MESSAGE_TYPE);
+
+  float len = msg.data[0];
+  *((float *)ptr) = len;
+  ptr += sizeof(float);
+  for(int i=0;i<len;i++)
+  {
+    *((float *)ptr) = msg.data[i + 1];
+    ptr += sizeof(float);
+  }
+
+  return ptr - udp_send_buf_;
+}
+void land_command_cb(const std_msgs::Float32MultiArray &msg)
+{
+  int len = serializeLand(msg);
+
+  if (sendto(udp_send_fd_, udp_send_buf_, len, 0, (struct sockaddr *)&addr_udp_send_, sizeof(addr_udp_send_)) <= 0)
+  {
+    ROS_ERROR("UDP SEND ERROR (2)!!!");
+  }
+}
+
+
+
+
+
 void emergency_stop_sub_udp_cb(const std_msgs::EmptyPtr &msg)
 {
 
@@ -752,7 +861,43 @@ void udp_recv_fun()
 
       break;
     }
-
+    case MESSAGE_TYPE::TAKEOFF:
+    {
+      ROS_INFO("RECV TAKEOFF");
+      if(is_master)
+      {
+        continue;
+      }
+      if (valread == deserializeTakeoff(takeoff_msg_))
+      {
+        swarm_takeoff_pub_.publish(*takeoff_msg_);
+      }
+      else
+      {
+        ROS_ERROR("Received message length not matches the Takeoff (1)!!!");
+        continue;
+      }
+      break;
+    }
+    case MESSAGE_TYPE::LAND:
+    {
+      ROS_INFO("RECV LAND");
+      if(is_master)
+      {
+        continue;
+      }
+      if (valread == deserializeTakeoff(land_msg_))
+      {
+        swarm_land_pub_.publish(*land_msg_);
+      }
+      else
+      {
+        ROS_ERROR("Received message length not matches the Land (1)!!!");
+        continue;
+      }
+      
+      break;
+    }
     default:
 
       //ROS_ERROR("Unknown received message???");
@@ -771,11 +916,18 @@ int main(int argc, char **argv)
   nh.param("broadcast_ip", udp_ip_, string("127.0.0.255"));
   nh.param("drone_id", drone_id_, -1);
   nh.param("odom_max_freq", odom_broadcast_freq_, 1000.0);
+  nh.param("is_master", is_master, false);
 
   bsplines_msg_.reset(new traj_utils::MultiBsplines);
   odom_msg_.reset(new nav_msgs::Odometry);
   stop_msg_.reset(new std_msgs::Empty);
   bspline_msg_.reset(new traj_utils::Bspline);
+
+
+  takeoff_msg_.reset(new std_msgs::Float32MultiArray);
+  land_msg_.reset(new std_msgs::Float32MultiArray);
+  command_point_msg.reset(new std_msgs::Float32MultiArray);
+
 
   if (drone_id_ == -1)
   {
@@ -800,6 +952,17 @@ int main(int argc, char **argv)
 
   one_traj_sub_ = nh.subscribe("/broadcast_bspline", 100, one_traj_sub_udp_cb, ros::TransportHints().tcpNoDelay());
   one_traj_pub_ = nh.advertise<traj_utils::Bspline>("/broadcast_bspline2", 100);
+
+
+  swarm_takeoff_pub_ = nh.advertise<std_msgs::Float32MultiArray>("/swarm_takeoff", 100);
+  swarm_land_pub_ = nh.advertise<std_msgs::Float32MultiArray>("/swarm_land", 100);
+
+  if(is_master)
+  {
+    swarm_takeoff_sub_ = nh.subscribe("/swarm_takeoff", 100, takeoff_command_cb, ros::TransportHints().tcpNoDelay());
+    swarm_land_sub_ = nh.subscribe("/swarm_land", 100, land_command_cb, ros::TransportHints().tcpNoDelay());
+
+  }
 
   boost::thread recv_thd(server_fun);
   recv_thd.detach();
