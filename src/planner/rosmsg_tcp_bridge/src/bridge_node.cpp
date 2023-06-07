@@ -753,7 +753,7 @@ int serializeNextcommand(const std_msgs::Float32MultiArray &msg)
 {
   char *ptr = udp_send_buf_;
 
-  *((MESSAGE_TYPE *)ptr) = MESSAGE_TYPE::LAND;
+  *((MESSAGE_TYPE *)ptr) = MESSAGE_TYPE::ONE_POINT;
   ptr += sizeof(MESSAGE_TYPE);
 
   float drone_id = msg.data[0];
