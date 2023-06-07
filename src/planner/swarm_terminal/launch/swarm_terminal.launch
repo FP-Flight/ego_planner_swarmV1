@@ -6,10 +6,12 @@
         <!-- <remap from="~my_odom" to="$(arg odom_topic)"/> -->
         <param name="next_drone_ip" value="10.42.0.244" type="string"/>
         <param name="broadcast_ip" value="10.42.0.255" type="string"/>
-        <param name="drone_id" value="0"/>
+        <param name="drone_id" value="255"/>
         <param name="odom_max_freq" value="70"/>
+        <param name="is_master" value="true"/>
   </node>
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(find ego_planner)/launch/swarm_viewer.rviz" required="true" />
+    
     <!-- vis -->
     <node pkg="swarm_terminal" name="swarm_terminal_0" type="swarm_terminal_node" output="screen" >
         <param name="drone_id" value="0"/>
@@ -18,9 +20,7 @@
         <param name="color/b" value="1"/>
         <param name="color/a" value="1"/>
 
-        <!-- <remap from="~drone0_odom_topic" to=""/> -->
         <remap from="~exp_pos" to="/drone_0_ego_planner_node/exp_pos"/>
-        <!-- <remap from="~drone0_odom_topic" to=""/> -->
         <remap from="~optimal_list" to="/drone_0_ego_planner_node/optimal_list"/>
     </node>
     <node pkg="swarm_terminal" name="swarm_terminal_1" type="swarm_terminal_node" output="screen" >
@@ -30,9 +30,51 @@
         <param name="color/b" value="1"/>
         <param name="color/a" value="1"/>
 
-        <!-- <remap from="~drone0_odom_topic" to=""/> -->
         <remap from="~exp_pos" to="/drone_1_ego_planner_node/exp_pos"/>
         <remap from="~optimal_list" to="/drone_1_ego_planner_node/optimal_list"/>
 
+    </node> 
+    <node pkg="swarm_terminal" name="swarm_terminal_2" type="swarm_terminal_node" output="screen" >
+        <param name="drone_id" value="1"/>
+        <param name="color/r" value="0"/>
+        <param name="color/g" value="1"/>
+        <param name="color/b" value="1"/>
+        <param name="color/a" value="1"/>
+
+        <remap from="~exp_pos" to="/drone_2_ego_planner_node/exp_pos"/>
+        <remap from="~optimal_list" to="/drone_2_ego_planner_node/optimal_list"/>
+
+    </node> 
+      <node pkg="swarm_terminal" name="swarm_terminal_3" type="swarm_terminal_node" output="screen" >
+        <param name="drone_id" value="1"/>
+        <param name="color/r" value="0"/>
+        <param name="color/g" value="1"/>
+        <param name="color/b" value="1"/>
+        <param name="color/a" value="1"/>
+
+        <remap from="~exp_pos" to="/drone_3_ego_planner_node/exp_pos"/>
+        <remap from="~optimal_list" to="/drone_3_ego_planner_node/optimal_list"/>
+
+    </node> 
+    <node pkg="swarm_terminal" name="swarm_terminal_4" type="swarm_terminal_node" output="screen" >
+        <param name="drone_id" value="1"/>
+        <param name="color/r" value="0"/>
+        <param name="color/g" value="1"/>
+        <param name="color/b" value="1"/>
+        <param name="color/a" value="1"/>
+
+        <remap from="~exp_pos" to="/drone_4_ego_planner_node/exp_pos"/>
+        <remap from="~optimal_list" to="/drone_4_ego_planner_node/optimal_list"/>
+
+    </node> 
+    <node pkg="swarm_terminal" name="swarm_terminal_5" type="swarm_terminal_node" output="screen" >
+        <param name="drone_id" value="1"/>
+        <param name="color/r" value="0"/>
+        <param name="color/g" value="1"/>
+        <param name="color/b" value="1"/>
+        <param name="color/a" value="1"/>
+
+        <remap from="~exp_pos" to="/drone_5_ego_planner_node/exp_pos"/>
+        <remap from="~optimal_list" to="/drone_5_ego_planner_node/optimal_list"/>
     </node> 
   </launch>
