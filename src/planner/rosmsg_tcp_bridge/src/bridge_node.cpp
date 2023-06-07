@@ -513,7 +513,7 @@ int deserializeLand(std_msgs::Float32MultiArrayPtr &msg)
   for(int i=0;i<len;i++)
   {
     ROS_INFO_STREAM(i);
-    msg->data[i+1] = *((double *)ptr);
+    msg->data[i+1] = *((float *)ptr);
     ptr += sizeof(float);
   }
 
