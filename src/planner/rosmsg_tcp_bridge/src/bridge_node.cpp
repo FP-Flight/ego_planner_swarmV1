@@ -23,8 +23,8 @@
 using namespace std;
 
 int send_sock_, server_fd_, recv_sock_, udp_server_fd_, udp_send_fd_;
-ros::Subscriber swarm_trajs_sub_, other_odoms_sub_, emergency_stop_sub_, one_traj_sub_ ,swarm_takeoff_sub_,swarm_land_sub_;
-ros::Publisher swarm_trajs_pub_, other_odoms_pub_, emergency_stop_pub_, one_traj_pub_,swarm_takeoff_pub_,swarm_land_pub_;
+ros::Subscriber swarm_trajs_sub_, other_odoms_sub_, emergency_stop_sub_, one_traj_sub_ ,swarm_takeoff_sub_,swarm_land_sub_,swarm_command_sub_;
+ros::Publisher swarm_trajs_pub_, other_odoms_pub_, emergency_stop_pub_, one_traj_pub_,swarm_takeoff_pub_,swarm_land_pub_,swarm_command_pub_;;
 string tcp_ip_, udp_ip_;
 int drone_id_;
 double odom_broadcast_freq_;
@@ -520,6 +520,28 @@ int deserializeLand(std_msgs::Float32MultiArrayPtr &msg)
 
   return ptr - udp_recv_buf_;
 }
+
+int deserializeNextCommand(std_msgs::Float32MultiArrayPtr &msg)
+{
+  char *ptr = udp_recv_buf_;
+  ptr += sizeof(MESSAGE_TYPE);
+  float drone_id = *((float *)ptr);
+  msg->data.resize(4);
+  msg->data[0] = drone_id;
+  ptr += sizeof(float);
+
+  for(int i=0;i<3;i++)
+  {
+    ROS_INFO_STREAM(i);
+    msg->data[i+1] = *((float *)ptr);
+    ptr += sizeof(float);
+  }
+
+  return ptr - udp_recv_buf_;
+}
+
+
+
 int deserializeOdom(nav_msgs::OdometryPtr &msg)
 {
   char *ptr = udp_recv_buf_;
@@ -727,6 +749,33 @@ void land_command_cb(const std_msgs::Float32MultiArray &msg)
     ROS_ERROR("UDP SEND ERROR (2)!!!");
   }
 }
+int serializeNextcommand(const std_msgs::Float32MultiArray &msg)
+{
+  char *ptr = udp_send_buf_;
+
+  *((MESSAGE_TYPE *)ptr) = MESSAGE_TYPE::LAND;
+  ptr += sizeof(MESSAGE_TYPE);
+
+  float drone_id = msg.data[0];
+  *((float *)ptr) = drone_id;
+  ptr += sizeof(float);
+  for(int i=0;i<3;i++)
+  {
+    *((float *)ptr) = msg.data[i + 1];
+    ptr += sizeof(float);
+  }
+
+  return ptr - udp_send_buf_;
+}
+void next_command_cb(const std_msgs::Float32MultiArray &msg)
+{
+  int len = serializeNextcommand(msg);
+
+  if (sendto(udp_send_fd_, udp_send_buf_, len, 0, (struct sockaddr *)&addr_udp_send_, sizeof(addr_udp_send_)) <= 0)
+  {
+    ROS_ERROR("UDP SEND ERROR (2)!!!");
+  }
+}
 
 
 
@@ -899,6 +948,28 @@ void udp_recv_fun()
       
       break;
     }
+    case MESSAGE_TYPE::ONE_POINT:
+    {
+      ROS_INFO("RECV ONE_POINT");
+      if(is_master)
+      {
+        continue;
+      }
+      if (valread == deserializeNextCommand(land_msg_))
+      {
+        swarm_land_pub_.publish(*land_msg_);
+      }
+      else
+      {
+        ROS_ERROR("Received message length not matches the Land (1)!!!");
+        continue;
+      }
+      
+      break;
+    }
+    
+    
+    
     default:
 
       //ROS_ERROR("Unknown received message???");
@@ -957,11 +1028,13 @@ int main(int argc, char **argv)
 
   swarm_takeoff_pub_ = nh.advertise<std_msgs::Float32MultiArray>("/swarm_takeoff", 100);
   swarm_land_pub_ = nh.advertise<std_msgs::Float32MultiArray>("/swarm_land", 100);
+  swarm_command_pub_ =  nh.advertise<std_msgs::Float32MultiArray>("/swarm_command", 100);
 
   if(is_master)
   {
     swarm_takeoff_sub_ = nh.subscribe("/swarm_takeoff", 100, takeoff_command_cb, ros::TransportHints().tcpNoDelay());
     swarm_land_sub_ = nh.subscribe("/swarm_land", 100, land_command_cb, ros::TransportHints().tcpNoDelay());
+    swarm_command_sub_ = nh.subscribe("/swarm_command", 100, next_command_cb, ros::TransportHints().tcpNoDelay());
 
   }
 
