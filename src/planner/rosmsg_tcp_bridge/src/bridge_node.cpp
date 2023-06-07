@@ -14,7 +14,8 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#define PORT 8080
+// 8080 8060 already in used by gitlab, TCP is useless,give a random port value
+#define PORT 8099
 #define UDP_PORT 8081
 #define BUF_LEN 1048576    // 1MB
 #define BUF_LEN_SHORT 1024 // 1KB
