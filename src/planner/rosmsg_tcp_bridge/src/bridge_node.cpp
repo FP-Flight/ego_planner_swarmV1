@@ -957,7 +957,7 @@ void udp_recv_fun()
       }
       if (valread == deserializeNextCommand(land_msg_))
       {
-        swarm_land_pub_.publish(*land_msg_);
+        swarm_command_pub_.publish(*land_msg_);
       }
       else
       {
