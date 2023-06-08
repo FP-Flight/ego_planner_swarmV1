@@ -63,6 +63,10 @@ namespace ego_planner
     {
       waypoint_sub_ = nh.subscribe("/move_base_simple/goal", 1, &EGOReplanFSM::waypointCallback, this);
     }
+    else if(target_type_ == TARGET_TYPE::REMOTE_TARGET)
+    {
+      waypoint_sub_ = nh.subscribe("/swarm_command", 1,&EGOReplanFSM::remoteWaypointCallback,this);
+    }
     else if (target_type_ == TARGET_TYPE::PRESET_TARGET)
     {
       trigger_sub_ = nh.subscribe("/traj_start_trigger", 1, &EGOReplanFSM::triggerCallback, this);
@@ -220,6 +224,22 @@ namespace ego_planner
     Eigen::Vector3d end_wp(msg->pose.position.x, msg->pose.position.y, 1.0);
 
     planNextWaypoint(end_wp);
+  }
+
+  void EGOReplanFSM::remoteWaypointCallback(const std_msgs::Float32MultiArrayPtr &msg)
+  {
+    ROS_INFO("recv point,drone_ID %d",planner_manager_->pp_.drone_id);
+
+    if(abs(msg->data[0] - planner_manager_->pp_.drone_id)<1e-2)
+    {
+      ROS_INFO("right,recv point,drone_ID %d",planner_manager_->pp_.drone_id);
+      cout << "Triggered!" << endl;
+      init_pt_ = odom_pos_;
+      Eigen::Vector3d end_wp(msg->data[1], msg->data[2], msg->data[3]);
+
+      planNextWaypoint(end_wp);
+    }
+
   }
 
   void EGOReplanFSM::odometryCallback(const nav_msgs::OdometryConstPtr &msg)

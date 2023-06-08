@@ -7,7 +7,7 @@
     <arg name="odom_topic" value="/quadrotor_control/odom"/>
     <arg name="depth_camera_topic" value="/camera/depth/image_rect_raw"/>
 
-    <arg name="drone_id" value="1" />
+    <arg name="drone_id" default="1" />
     <!-- number of moving objects -->
     <arg name="obj_num" value="10" />
 
@@ -48,7 +48,7 @@
 
     <!-- 1: use 2D Nav Goal to select goal  -->
     <!-- 2: use global waypoints below  -->
-    <arg name="flight_type" value="2" />
+    <arg name="flight_type" value="4" />
     
     <!-- global waypoints -->
     <!-- It generates a piecewise min-snap traj passing all waypoints -->
