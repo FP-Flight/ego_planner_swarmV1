@@ -157,20 +157,6 @@ int main(int argc, char **argv)
                     static_cast<float>(dronePoints[1][2][3])};
                 goal_pub.publish(goal_msgs);
             }
-
-            if ((abs(other_odom.pose.pose.position.x - dronePoints[1][1][1]) > 0.1 ||
-                 abs(other_odom.pose.pose.position.y - dronePoints[1][1][2]) > 0.1 ||
-                 abs(other_odom.pose.pose.position.z - dronePoints[1][1][3]) > 0.1) &&
-                fsm_1.now_state)
-            {
-                fsm_1.set_move_to_point_2_flag(true);
-                goal_msgs.data = {
-                    static_cast<float>(droneid[1]),
-                    static_cast<float>(dronePoints[1][3][1]),
-                    static_cast<float>(dronePoints[1][3][2]),
-                    static_cast<float>(dronePoints[1][3][3])};
-                goal_pub.publish(goal_msgs);
-            }
         }
 
         if (other_odom.child_frame_id == "drone_2")
