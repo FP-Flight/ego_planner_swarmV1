@@ -35,3 +35,10 @@ add_executable(${PROJECT_NAME}_node src/swarm_terminal.cpp)
 target_link_libraries(${PROJECT_NAME}_node
   ${catkin_LIBRARIES}
 )
+
+
+add_executable(check_state_node src/check_state.cpp)
+
+target_link_libraries(check_state_node
+  ${catkin_LIBRARIES}
+)

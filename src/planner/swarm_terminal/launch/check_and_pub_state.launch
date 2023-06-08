@@ -1,0 +1,10 @@
+<launch>
+  <arg name="drone_id" default="1"/>
+
+  <!-- Launch ROS Package Template Node -->
+  <node pkg="swarm_terminal" type="check_state_node" name="check_state_node" output="screen">
+    <rosparam command="load" file="$(find param_file)/templete/mission.yaml"/>
+  </node>
+
+</launch>
+
