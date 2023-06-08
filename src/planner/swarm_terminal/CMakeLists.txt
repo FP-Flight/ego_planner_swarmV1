@@ -37,8 +37,10 @@ target_link_libraries(${PROJECT_NAME}_node
 )
 
 
-add_executable(check_state_node src/check_state.cpp)
+add_executable(mission_publish_node src/mission_publish.cpp
+src/drone_state.cpp
+)
 
-target_link_libraries(check_state_node
+target_link_libraries(mission_publish_node
   ${catkin_LIBRARIES}
 )
