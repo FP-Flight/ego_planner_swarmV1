@@ -7,20 +7,10 @@
     <arg name="odom_topic" value="/quadrotor_control/odom"/>
     <arg name="depth_camera_topic" value="/camera/depth/image_rect_raw"/>
 
-    <arg name="drone_id" value="1" />
+    <arg name="drone_id" default="1" />
     <!-- number of moving objects -->
     <arg name="obj_num" value="10" />
-    <node pkg="rosmsg_tcp_bridge" name="drone_bridge_node" type="bridge_node" output="screen" >
-        <remap from="position_cmd" to="/drone_$(arg drone_id)_planning/pos_cmd"/>
-        <remap from="planning/bspline" to="/drone_$(arg drone_id)_planning/bspline"/>
-        <remap from="~my_odom" to="$(arg odom_topic)"/>
 
-        <param name="next_drone_ip" value="127.0.0.1" type="string"/>
-        <param name="broadcast_ip" value="10.42.0.255" type="string"/>
-        <param name="drone_id" value="$(arg drone_id)"/>
-        <param name="odom_max_freq" value="70"/>
-
-    </node>
   <include file="$(find ego_planner)/launch/advanced_param_swarm_exp.xml">
 
     <arg name="drone_id" value="$(arg drone_id)"/>
@@ -58,7 +48,7 @@
 
     <!-- 1: use 2D Nav Goal to select goal  -->
     <!-- 2: use global waypoints below  -->
-    <arg name="flight_type" value="2" />
+    <arg name="flight_type" value="4" />
     
     <!-- global waypoints -->
     <!-- It generates a piecewise min-snap traj passing all waypoints -->

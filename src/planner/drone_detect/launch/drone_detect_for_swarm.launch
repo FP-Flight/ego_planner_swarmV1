@@ -4,7 +4,7 @@
 
   <!-- Launch ROS Package Template Node -->
   <node pkg="drone_detect" type="drone_detect" name="test_drone_detect" output="screen">
-    <rosparam command="load" file="/home/qyswarm/param_files/real_use/vins/left.yaml" />
+    <rosparam command="load" file="/home/qyswarm/param_files/real_use/drone_detect/depth_camera.yaml" />
     <rosparam command="load" file="$(find drone_detect)/config/default.yaml"/>
     <param name="my_id"      value="$(arg drone_id)" />
     <param name="debug_flag" value="true" />
